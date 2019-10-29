@@ -1,0 +1,108 @@
+The Runge-Kutta algorithm was implemented by creating a vector which contained initial values for the positions and velocities of each of the three bodies .
+Subsequently, a vector was created which contained the derivatives of these initial values i.e. velocities and accelerations of the three bodies. This was accomplished by using our initial velocity values as the derivatives of displacement with respect to time and by using the formula for acceleration to find values for the derivative of velocity with respect to time. 
+Then, the relationship between the velocity and acceleration vector and the position and velocity vector can be used in a fourth order Runge-Kutta algorithm to give updated values for position and velocity at the next time , which in our case is designated as the following day.
+This was accomplished using the following code: 
+
+function[Orbit] = Orbits(N)
+%This function models the orbits of the Earth and Moon around the sun.
+%It does so by solving Newton's universal law of gravitation for the
+%three-body problem through the use of a 4th order Runge-Kutta. 
+%Inputs: N- The number of days for which to model the orbits.
+%Outputs: Orbit- A vector containing the position and velocity components
+%for each day 
+%The outputs are in the order:
+%[xs ys zs xe ye ze xm ym zm vxs vys vzs vxe vye vze vxm vym vzm]
+%where x,y,z are position vectors
+%      vx, vy, vz are velocity vectors
+%      s, m and e refer to the Sun, Moon and Earth respectively.
+%The function uses initial conditions for the motion of the bodies which
+%were accurate on 29/04/16. As such the function is limited in the models
+%it can create. 
+%Authors: Eoin Durnin
+%Version:1.4 Created: 29/04/16
+ 
+%% Constants
+m_s = 1.9885e30; %mass of the sun in kg
+m_m = 734.9e20;%mass of the moon in kg
+m_e = 5.97219e24;%mass of the earth in kg
+ 
+ 
+G=1.4879e-34; %Gravitational constant in AU^3/(kg*Day^2)  
+h = 1;%time step in days
+%% Initial conditions
+ 
+%Position vectors (in AU)
+xs=3.764843035679884E-03;
+ys=2.231734687725611E-03;
+zs=-1.628506104083278E-04;
+xe=-7.801330825560105E-01;
+ye=-6.300084830095340E-01;
+ze=-1.381909639786797E-04;
+xm=-7.790385351621740E-01;
+ym=-6.323522743449400E-01;
+zm=5.315764617341734E-05;
+
+%Velocity vectors (in AU/day)
+vxs=-3.559445233040790E-07;
+vys=6.990995304475847E-06;
+vzs=-2.297765401130413E-09;
+vxe=1.051412837115497E-02;
+vye=-1.345206482105202E-02;	
+vze=8.371054068792787E-07;
+vxm=1.102756196270735E-02;
+vym=-1.317769656575170E-02;
+vzm=-3.131486589079238E-05;
+ 
+ 
+%Storage for position and velocity vectors
+V=[xs ys zs xe ye ze xm ym zm vxs vys vzs vxe vye vze vxm vym vzm]'; 
+ 
+ 
+ 
+Orbit(:,1) = V %saves these inital values in the output
+ 
+ 
+ 
+%Vector holding the derivatives of V i.e. velocity and acceleration
+%dV=[vxs vys vzs vxe vye vze vxm vym vzm axs ays azs axe aye aze axm aym azm]
+dv =@(V) [V(10:18); 
+    ((G*m_e*(V(4)-V(1)))/(sqrt((V(1)-V(4))^2+(V(2)-V(5))^2+(V(3)-V(6))^2))^3)+((G*m_m*(V(7)-V(1)))/(sqrt((V(1)-V(7))^2+(V(2)-V(8))^2+(V(3)-V(9))^2))^3);
+    ((G*m_e*(V(5)-V(2)))/(sqrt((V(1)-V(4))^2+(V(2)-V(5))^2+(V(3)-V(6))^2))^3)+((G*m_m*(V(8)-V(2)))/(sqrt((V(1)-V(7))^2+(V(2)-V(8))^2+(V(3)-V(9))^2))^3);
+    ((G*m_e*(V(6)-V(3)))/(sqrt((V(1)-V(4))^2+(V(2)-V(5))^2+(V(3)-V(9))^2))^3)+((G*m_m*(V(9)-V(3)))/(sqrt((V(1)-V(7))^2+(V(2)-V(8))^2+(V(3)-V(9))^2))^3);
+    ((G*m_m*(V(7)-V(4)))/(sqrt((V(7)-V(4))^2+(V(8)-V(5))^2+(V(9)-V(6))^2))^3)+((G*m_s*(V(1)-V(4)))/(sqrt((V(1)-V(4))^2+(V(2)-V(5))^2+(V(3)-V(6))^2))^3);
+    ((G*m_m*(V(8)-V(5)))/(sqrt((V(7)-V(4))^2+(V(8)-V(5))^2+(V(9)-V(6))^2))^3)+((G*m_s*(V(2)-V(5)))/(sqrt((V(1)-V(4))^2+(V(2)-V(5))^2+(V(3)-V(6))^2))^3);
+    ((G*m_m*(V(9)-V(6)))/(sqrt((V(7)-V(4))^2+(V(8)-V(5))^2+(V(9)-V(6))^2))^3)+((G*m_s*(V(3)-V(6)))/(sqrt((V(1)-V(4))^2+(V(2)-V(5))^2+(V(3)-V(6))^2))^3);
+    ((G*m_s*(V(1)-V(7)))/(sqrt((V(1)-V(7))^2+(V(2)-V(8))^2+(V(3)-V(9))^2))^3)+((G*m_e*(V(4)-V(7)))/(sqrt((V(4)-V(7))^2+(V(5)-V(8))^2+(V(6)-V(9))^2))^3);
+    ((G*m_s*(V(2)-V(8)))/(sqrt((V(1)-V(7))^2+(V(2)-V(8))^2+(V(3)-V(9))^2))^3)+((G*m_e*(V(5)-V(8)))/(sqrt((V(4)-V(7))^2+(V(5)-V(8))^2+(V(6)-V(9))^2))^3);
+    ((G*m_s*(V(3)-V(9)))/(sqrt((V(1)-V(7))^2+(V(2)-V(8))^2+(V(3)-V(9))^2))^3)+((G*m_e*(V(6)-V(9)))/(sqrt((V(4)-V(7))^2+(V(5)-V(8))^2+(V(6)-V(9))^2))^3);];
+
+
+%% Runge-Kutta algorithm
+for count = 1:N         
+ 
+   k1=h*dv(V);     %Evaluating k1
+   
+   V2 = V+(k1/2);   %Evaluation function + k1/2
+   f = dv(V2);     %Re-evaluating derivative functions
+ 
+   k2=h*f;       %k2 is evaluated
+ 
+   V3 = V+(k2/2);  %function +k2/2
+   f = dv(V3);    %evaluating derivative vector at V3
+ 
+   k3=h*f;        %k3 is evaluated.
+         
+   V4 = V+k3;    %adding k3 to vector V 
+   f = dv(V4);     %evaluating dV at V4
+ 
+   k4=h*f;       %k4 is evalulated. 
+    
+   
+ V=V+((1/6)*(k1+(2*k2)+(2*k3)+k4));  %Implementing 4th order Runge-Kutta. 
+     
+ Orbit(:,count+1)= V; %The position and velocity vectors are stored 
+                             
+ 
+end
+end
+

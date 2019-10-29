@@ -1,0 +1,97 @@
+The animation was implemented using the following code:
+
+%% Initial Constants
+ 
+N=365.25; %number of days in a year
+ 
+[orbits]=Orbits(N);   % Calling the function Orbits to solve 
+                         %the system of equations describing the motion
+                         %of the Earth, Moon and Sun
+ 
+earth = [orbits(4,:);orbits(5,:);orbits(6,:)];%creating an earth vector containing the positions
+                                              %from the output of the function
+ 
+moon = [orbits(7,:);orbits(8,:);orbits(9,:)];%creating a moon vector containing the positions
+                                             %from the output of the function
+ 
+sun=[orbits(1,:);orbits(2,:);orbits(3,:)]; %creating a sun vector containing the positions
+                                            %from the output of the function
+ 
+currfig =gcf;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%plotting the paths taken by the earth, moon and sun over time 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+plot3(earth(1,:),earth(2,:),earth(3,:),'c');  
+hold on
+plot3(moon(1,:),moon(2,:),moon(3,:),'w');
+ 
+plot3(sun(1,:),sun(2,:),sun(3,:),'y');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%setting up the appropriate axis, background,zoom and lighting for 
+%animation.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                      
+set(gca, 'color', [0 0 0]);                   % Fixing the axes and setting the 
+set(gcf, 'color', [0 0 0]);                   % background to black to resemble space
+set(gca, 'xlim', [-1.5 1.5]);
+set(gca, 'ylim', [-1.5 1.5]);
+set(gca, 'zlim', [-1 1]);
+light('Position',[0 0 0],'Style','local');%lighting from the sun
+axis off;                               
+zoom(2);
+ 
+for count=1:N
+%% Creating a sphere to represent the moon
+ 
+r= 1.16138017e-5*4750;    %radius of Moon(AU) * 4750 for visualisation 
+phi=linspace(0,pi,30);    %linearly spaced vector (30 points, 0-180 degrees)
+
+theta=linspace(0,2*pi,40);  %linearly spaced vector (40 points, 0-360 degrees)
+                            
+[phi,theta]=meshgrid(phi,theta); %Creating mesh using above vectors
+%Cartesian coordinates for a sphere
+x=r*sin(phi).*cos(theta);   
+y=r*sin(phi).*sin(theta);
+z=r*cos(phi); 
+%creating surface for the Moon
+plothandle=surf(x+moon(1,count),y+moon(2,count),z+moon(3,count),'EdgeColor','none', 'FaceColor','white');
+ 
+%% Creating a sphere to represent the Sun
+ 
+r= 0.00465047*40;     %radius of Sun(AU) * 40 for visualisation 
+phi=linspace(0,pi,30);      %linearly spaced vector (30 points, 0-180 degrees) 
+   
+theta=linspace(0,2*pi,40);  %linearly spaced vector (40 points, 0-360 degrees)
+                            
+[phi,theta]=meshgrid(phi,theta); %Creating mesh using above vectors
+%Cartesian coordinates for a sphere
+x=r*sin(phi).*cos(theta);  
+y=r*sin(phi).*sin(theta);
+z=r*cos(phi); 
+%creating surface for the Sun
+plothandle2=surf(x+sun(1,count),y+sun(2,count),z+sun(3,count),'EdgeColor','yellow', 'FaceColor','red');
+ 
+%% Creating a sphere to represent the Earth
+r= (4.26349651e-05)*1300; %radius of Earth(AU) * 1300 for visualisation 
+ 
+phi=linspace(0,pi,30);%linearly spaced vector (30 points, 0-180 degrees) 
+ 
+theta=linspace(0,2*pi,40);%linearly spaced vector (40 points, 0-360 degrees)
+ 
+[phi,theta]=meshgrid(phi,theta);%Creating mesh using above vectors
+%Cartesian coordinates for a sphere
+x=r*sin(phi).*cos(theta);
+y=r*sin(phi).*sin(theta);
+z=r*cos(phi); 
+%creating surface for the Sun
+plothandle3=surf(x+earth(1,count),y+earth(2,count),z+earth(3, count),'EdgeColor','none','FaceColor','blue');
+ 
+ 
+m(count)=getframe(currfig);%saving the current frame for movie file
+  
+%cleaning up for next frame of movie
+delete(plothandle);  
+delete(plothandle2); 
+delete(plothandle3);
+end
+ 
+movie2avi(m, 'MP2_final.avi', 'compression', 'None'); %creating avi file
